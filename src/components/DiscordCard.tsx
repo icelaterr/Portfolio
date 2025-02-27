@@ -1,7 +1,9 @@
+// src/components/DiscordCard.tsx
+
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { fetchDiscordUser } from '../api/discord';
-import { DiscordUser } from '../types';
+import { DiscordUser } from '../types/discord';
 import { Code, Globe, Mail, MessageCircle } from 'lucide-react';
 
 const DiscordCard: React.FC = () => {
@@ -31,7 +33,7 @@ const DiscordCard: React.FC = () => {
     // İlk veri çekimi
     getDiscordUser();
 
-    // Her dakika veri yenilemesi (60000ms)
+    // Her dakika veriyi yenile (60000ms)
     const intervalId = setInterval(() => {
       getDiscordUser();
     }, 60000);
@@ -177,7 +179,7 @@ const DiscordCard: React.FC = () => {
 
             <div className="flex items-center mt-1">
               <span className={`inline-block w-2 h-2 ${getStatusColor(discordUser.status)} rounded-full mr-2`}></span>
-              <p className="text-gray-400">{getStatusText(discordUser.status)} - Full-Stack Developer</p>
+              <p className="text-gray-400">{getStatusText(discordUser.status)}</p>
             </div>
 
             {hasActivity ? (
@@ -197,7 +199,7 @@ const DiscordCard: React.FC = () => {
             ) : (
               <div className="mt-4 bg-gray-700/50 rounded-md p-3">
                 <p className="text-sm text-gray-300 font-medium">
-                  Currently not doing anything
+                  Not currently engaged in any activity.
                 </p>
               </div>
             )}
@@ -209,4 +211,4 @@ const DiscordCard: React.FC = () => {
 };
 
 export default DiscordCard;
-          
+    
