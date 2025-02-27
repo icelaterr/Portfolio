@@ -13,7 +13,6 @@ const DiscordCard: React.FC = () => {
     const getDiscordUser = async () => {
       try {
         setLoading(true);
-        // BOT_TOKEN'un dolu olup olmadığını kontrol etmek için konsola yazdırıyoruz
         console.log("BOT_TOKEN:", process.env.BOT_TOKEN);
         const userData = await fetchDiscordUser();
         if (!userData) {
@@ -21,7 +20,8 @@ const DiscordCard: React.FC = () => {
         }
         setDiscordUser(userData);
       } catch (err: any) {
-        setError(`Failed to fetch Discord profile: ${err.message}`);
+        const envStatus = process.env.BOT_TOKEN ? "env: working" : "env: undefined";
+        setError(`Failed to fetch Discord profile: ${err.message} ${envStatus}`);
         console.error("Error fetching Discord profile:", err);
       } finally {
         setLoading(false);
@@ -31,7 +31,7 @@ const DiscordCard: React.FC = () => {
     // İlk veri çekimi
     getDiscordUser();
 
-    // Her dakika (60000ms) veri yenilemesi
+    // Her dakika veri yenilemesi (60000ms)
     const intervalId = setInterval(() => {
       getDiscordUser();
     }, 60000);
@@ -61,7 +61,6 @@ const DiscordCard: React.FC = () => {
     );
   }
 
-  // Durum (status) rengi belirleme fonksiyonu
   const getStatusColor = (status?: string) => {
     switch (status) {
       case 'online':
@@ -75,7 +74,6 @@ const DiscordCard: React.FC = () => {
     }
   };
 
-  // Durum (status) metnini belirleme fonksiyonu
   const getStatusText = (status?: string) => {
     switch (status) {
       case 'online':
@@ -91,7 +89,6 @@ const DiscordCard: React.FC = () => {
     }
   };
 
-  // Aktivite türünü belirleme fonksiyonu
   const getActivityType = (type: number) => {
     switch (type) {
       case 0:
@@ -212,4 +209,4 @@ const DiscordCard: React.FC = () => {
 };
 
 export default DiscordCard;
-                  
+      
