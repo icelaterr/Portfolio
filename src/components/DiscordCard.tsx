@@ -26,7 +26,7 @@ const DiscordCard: React.FC = () => {
     // Initial fetch
     getDiscordUser();
 
-    // Set up polling to refresh Discord status every minute
+    // Poll for updated Discord status every minute
     const intervalId = setInterval(() => {
       getDiscordUser();
     }, 60000);
@@ -196,3 +196,4 @@ const DiscordCard: React.FC = () => {
 };
 
 export default DiscordCard;
+    
