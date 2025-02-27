@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import Header from './components/Header';
@@ -120,3 +121,4 @@ function App() {
 }
 
 export default App;
+                        
