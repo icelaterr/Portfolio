@@ -1,12 +1,12 @@
+// vite.config.js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
-  define: {
-    'process.env.BOT_TOKEN': JSON.stringify(process.env.BOT_TOKEN),
-  },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000'
+    }
+  }
 });
