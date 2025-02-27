@@ -7,14 +7,19 @@ const DISCORD_USER_ID = '991409937022468169';
 
 export const fetchDiscordUser = async (): Promise<DiscordUser | null> => {
   try {
-    // Bot token'i import.meta.env üzerinden okuyoruz
+    const token = import.meta.env.VITE_BOT_TOKEN;
+    console.log("VITE_BOT_TOKEN:", token);
+    if (!token) {
+      throw new Error("BOT token is not defined");
+    }
     const response = await axios.get(`${DISCORD_API_URL}/users/${DISCORD_USER_ID}`, {
       headers: {
-        Authorization: `Bot ${import.meta.env.VITE_BOT_TOKEN}`,
+        Authorization: `Bot ${token}`,
       },
     });
     const userData = response.data;
     
+    // Simüle edilmiş durum verisi: örneğin "Playing Minecraft"
     const simulatedPresence = {
       status: 'online', // online, idle, dnd, offline
       activities: [
@@ -37,7 +42,7 @@ export const fetchDiscordUser = async (): Promise<DiscordUser | null> => {
       status: simulatedPresence.status,
       activities: simulatedPresence.activities,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching Discord user:', error);
     return null;
   }
