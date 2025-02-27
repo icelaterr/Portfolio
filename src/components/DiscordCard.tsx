@@ -13,20 +13,25 @@ const DiscordCard: React.FC = () => {
     const getDiscordUser = async () => {
       try {
         setLoading(true);
+        // BOT_TOKEN'un dolu olup olmadığını kontrol etmek için konsola yazdırıyoruz
+        console.log("BOT_TOKEN:", process.env.BOT_TOKEN);
         const userData = await fetchDiscordUser();
+        if (!userData) {
+          throw new Error("User data is null or undefined.");
+        }
         setDiscordUser(userData);
-      } catch (err) {
-        setError('Failed to fetch Discord profile');
-        console.error(err);
+      } catch (err: any) {
+        setError(`Failed to fetch Discord profile: ${err.message}`);
+        console.error("Error fetching Discord profile:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    // Initial fetch
+    // İlk veri çekimi
     getDiscordUser();
 
-    // Refresh Discord status every minute
+    // Her dakika (60000ms) veri yenilemesi
     const intervalId = setInterval(() => {
       getDiscordUser();
     }, 60000);
@@ -51,11 +56,12 @@ const DiscordCard: React.FC = () => {
   if (error || !discordUser) {
     return (
       <div className="w-full max-w-md mx-auto bg-red-900/20 text-red-200 rounded-lg shadow-lg p-6">
-        <p className="text-center">Failed to load Discord profile</p>
+        <p className="text-center">{error || 'Discord profile could not be loaded.'}</p>
       </div>
     );
   }
 
+  // Durum (status) rengi belirleme fonksiyonu
   const getStatusColor = (status?: string) => {
     switch (status) {
       case 'online':
@@ -69,6 +75,7 @@ const DiscordCard: React.FC = () => {
     }
   };
 
+  // Durum (status) metnini belirleme fonksiyonu
   const getStatusText = (status?: string) => {
     switch (status) {
       case 'online':
@@ -84,6 +91,7 @@ const DiscordCard: React.FC = () => {
     }
   };
 
+  // Aktivite türünü belirleme fonksiyonu
   const getActivityType = (type: number) => {
     switch (type) {
       case 0:
@@ -119,28 +127,28 @@ const DiscordCard: React.FC = () => {
       className="w-full max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg overflow-hidden"
     >
       {discordUser.banner && (
-        <div 
-          className="h-24 w-full bg-cover bg-center" 
-          style={{ 
-            backgroundColor: discordUser.accent_color 
-              ? `#${discordUser.accent_color.toString(16).padStart(6, '0')}` 
+        <div
+          className="h-24 w-full bg-cover bg-center"
+          style={{
+            backgroundColor: discordUser.accent_color
+              ? `#${discordUser.accent_color.toString(16).padStart(6, '0')}`
               : '#5865F2',
             backgroundImage: `url(https://cdn.discordapp.com/banners/${discordUser.id}/${discordUser.banner}.png?size=600)`
           }}
         />
       )}
-      
+
       <div className="p-6">
         <div className="flex items-start">
           <div className="relative">
-            <img 
-              src={avatarUrl} 
-              alt={discordUser.username} 
+            <img
+              src={avatarUrl}
+              alt={discordUser.username}
               className="w-20 h-20 rounded-full border-4 border-gray-800 object-cover"
             />
             <div className={`absolute bottom-0 right-0 w-5 h-5 ${getStatusColor(discordUser.status)} rounded-full border-2 border-gray-800`}></div>
           </div>
-          
+
           <div className="ml-4 flex-1">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">{discordUser.username}</h2>
@@ -148,10 +156,20 @@ const DiscordCard: React.FC = () => {
                 <a href="#contact" className="text-gray-400 hover:text-white transition-colors">
                   <Mail size={18} />
                 </a>
-                <a href={`https://discord.com/users/${discordUser.id}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <a
+                  href={`https://discord.com/users/${discordUser.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   <MessageCircle size={18} />
                 </a>
-                <a href="https://github.com/icelaterdc" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <a
+                  href="https://github.com/icelaterdc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   <Code size={18} />
                 </a>
                 <a href="#projects" className="text-gray-400 hover:text-white transition-colors">
@@ -159,12 +177,12 @@ const DiscordCard: React.FC = () => {
                 </a>
               </div>
             </div>
-            
+
             <div className="flex items-center mt-1">
               <span className={`inline-block w-2 h-2 ${getStatusColor(discordUser.status)} rounded-full mr-2`}></span>
               <p className="text-gray-400">{getStatusText(discordUser.status)} - Full-Stack Developer</p>
             </div>
-            
+
             {hasActivity ? (
               <div className="mt-4 bg-gray-700/50 rounded-md p-3">
                 {discordUser.activities[0].type !== 4 && (
@@ -194,4 +212,4 @@ const DiscordCard: React.FC = () => {
 };
 
 export default DiscordCard;
-    
+                  
