@@ -26,7 +26,7 @@ const DiscordCard: React.FC = () => {
     // Initial fetch
     getDiscordUser();
 
-    // Poll for updated Discord status every minute
+    // Refresh Discord status every minute
     const intervalId = setInterval(() => {
       getDiscordUser();
     }, 60000);
@@ -125,9 +125,7 @@ const DiscordCard: React.FC = () => {
             backgroundColor: discordUser.accent_color 
               ? `#${discordUser.accent_color.toString(16).padStart(6, '0')}` 
               : '#5865F2',
-            backgroundImage: discordUser.banner 
-              ? `url(https://cdn.discordapp.com/banners/${discordUser.id}/${discordUser.banner}.png?size=600)` 
-              : 'none'
+            backgroundImage: `url(https://cdn.discordapp.com/banners/${discordUser.id}/${discordUser.banner}.png?size=600)`
           }}
         />
       )}
@@ -150,7 +148,7 @@ const DiscordCard: React.FC = () => {
                 <a href="#contact" className="text-gray-400 hover:text-white transition-colors">
                   <Mail size={18} />
                 </a>
-                <a href="https://discord.com/users/991409937022468169" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <a href={`https://discord.com/users/${discordUser.id}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                   <MessageCircle size={18} />
                 </a>
                 <a href="https://github.com/icelaterdc" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
