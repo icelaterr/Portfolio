@@ -4,27 +4,39 @@ import { DiscordUser } from '../types';
 const DISCORD_API_URL = 'https://discord.com/api/v10';
 const DISCORD_USER_ID = '991409937022468169';
 
-// Your backend must expose an endpoint that provides realtime presence data.
-// For example: GET /discord/presence/:userId
-// The BACKEND_URL should be set in your environment variables.
-const PRESENCE_API_URL = `${process.env.BACKEND_URL || 'http://localhost:3000'}/discord/presence/${DISCORD_USER_ID}`;
-
 export const fetchDiscordUser = async (): Promise<DiscordUser | null> => {
   try {
-    // Fetch basic user info from Discord REST API using your BOT_TOKEN.
-    const { data: userData } = await axios.get(`${DISCORD_API_URL}/users/${DISCORD_USER_ID}`, {
+    // Fetch basic user data using your bot token from process.env.BOT_TOKEN.
+    const response = await axios.get(`${DISCORD_API_URL}/users/${DISCORD_USER_ID}`, {
       headers: {
-        Authorization: `Bot ${process.env.BOT_TOKEN}`
-      }
+        Authorization: `Bot ${process.env.BOT_TOKEN}`,
+      },
     });
-
-    // Fetch realtime presence data from your backend.
-    const { data: presenceData } = await axios.get(PRESENCE_API_URL);
+    const userData = response.data;
+    
+    // IMPORTANT: The /users endpoint does not include presence data.
+    // If your bot and user share a guild, you could get presence by calling:
+    //   GET /guilds/{guild.id}/members/{user.id}
+    // For simplicity, assume you have (or simulate) presence data:
+    const simulatedPresence = {
+      status: 'idle', // Could be "online", "idle", "dnd", or "offline"
+      activities: [
+        // The activity here would update based on actual presence events.
+        // For example, if the user is playing a game, the activity type would be 0 and
+        // details, state, and name would reflect that.
+        // If nothing is active, leave this array empty.
+      ]
+    };
 
     return {
-      ...userData,
-      status: presenceData.status, // e.g., "online", "idle", "dnd", "offline"
-      activities: presenceData.activities // e.g., dynamic list of activities such as Listening to Spotify
+      id: userData.id,
+      username: userData.username,
+      avatar: userData.avatar,
+      discriminator: userData.discriminator,
+      banner: userData.banner,
+      accent_color: userData.accent_color,
+      status: simulatedPresence.status,
+      activities: simulatedPresence.activities,
     };
   } catch (error) {
     console.error('Error fetching Discord user:', error);
