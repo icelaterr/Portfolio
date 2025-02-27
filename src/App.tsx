@@ -32,7 +32,7 @@ function App() {
       <Header />
       
       {/* Audio Player */}
-      <AudioPlayer audioSrc="public/music/music.mp3" />
+      <AudioPlayer audioSrc="/music/music.mp3" />
       
       {/* Hero Section */}
       <section id="home" className="min-h-screen flex items-center justify-center relative pt-20">
