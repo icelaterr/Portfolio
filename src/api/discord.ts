@@ -1,45 +1,30 @@
 import axios from 'axios';
 import { DiscordUser } from '../types';
 
-// Note: In a real-world scenario, you would need a backend service to handle Discord API requests
-// as the Discord API doesn't support direct browser requests due to CORS restrictions
-
-const DISCORD_API_URL = 'https://api.discord.com/api/v10';
+const DISCORD_API_URL = 'https://discord.com/api/v10';
 const DISCORD_USER_ID = '991409937022468169';
 
-// In a real implementation, this would be handled by a backend service
+// Your backend must expose an endpoint that provides realtime presence data.
+// For example: GET /discord/presence/:userId
+// The BACKEND_URL should be set in your environment variables.
+const PRESENCE_API_URL = `${process.env.BACKEND_URL || 'http://localhost:3000'}/discord/presence/${DISCORD_USER_ID}`;
+
 export const fetchDiscordUser = async (): Promise<DiscordUser | null> => {
   try {
-    // In a production environment, this would be a call to your backend service
-    // which would then use the BOT_TOKEN to fetch the Discord user data
-    
-    // For demonstration purposes, we're using a mock implementation
-    // In a real implementation, you would use process.env.BOT_TOKEN
-    
-    // This is a simplified example of what the backend would do:
-    // const response = await axios.get(`${DISCORD_API_URL}/users/${DISCORD_USER_ID}`, {
-    //   headers: {
-    //     Authorization: `Bot ${process.env.BOT_TOKEN}`
-    //   }
-    // });
-    
-    // For now, we'll return static data that matches your actual Discord status
+    // Fetch basic user info from Discord REST API using your BOT_TOKEN.
+    const { data: userData } = await axios.get(`${DISCORD_API_URL}/users/${DISCORD_USER_ID}`, {
+      headers: {
+        Authorization: `Bot ${process.env.BOT_TOKEN}`
+      }
+    });
+
+    // Fetch realtime presence data from your backend.
+    const { data: presenceData } = await axios.get(PRESENCE_API_URL);
+
     return {
-      id: DISCORD_USER_ID,
-      username: "IceLater",
-      avatar: "https://cdn.discordapp.com/avatars/991409937022468169/a_d779a17318a18f14884f848e27b07a5e.gif",
-      discriminator: "0",
-      status: "idle", // Your actual status
-      activities: [
-        {
-          name: "Spotify",
-          type: 2, // 2 is the type for "Listening to"
-          state: "Your favorite song",
-          details: "Spotify"
-        }
-      ],
-      banner: "https://cdn.discordapp.com/banners/991409937022468169/a_1234567890abcdef.png",
-      accent_color: 5793266
+      ...userData,
+      status: presenceData.status, // e.g., "online", "idle", "dnd", "offline"
+      activities: presenceData.activities // e.g., dynamic list of activities such as Listening to Spotify
     };
   } catch (error) {
     console.error('Error fetching Discord user:', error);
