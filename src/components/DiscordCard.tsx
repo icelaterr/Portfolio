@@ -1,31 +1,32 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-const DiscordCard: React.FC<{ userId: string }> = ({ userId }) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+const DiscordCard = () => {
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    // Sayfa yüklendiğinde CSS veya Canvas içeriğini al
-    setTimeout(() => {
-      const bgDiv = document.querySelector("div[style*='background-image']");
-      if (bgDiv) {
-        const bgImage = bgDiv.getAttribute("style")?.match(/url\(["']?(.*?)["']?\)/)?.[1];
-        if (bgImage) setImageUrl(bgImage);
+    const fetchData = async () => {
+      try {
+        const response = await fetch("API_LINKİNİZ"); // API'den veri çek
+        const result = await response.json();
+        setData(result); // State'i güncelle
+      } catch (error) {
+        console.error("API'den veri çekilirken hata oluştu:", error);
       }
+    };
 
-      const canvas = document.querySelector("canvas");
-      if (canvas) {
-        setImageUrl(canvas.toDataURL());
-      }
-    }, 1000);
+    fetchData(); // Bileşen yüklendiğinde çalıştır
+    const interval = setInterval(fetchData, 5000); // 5 saniyede bir yenile
+
+    return () => clearInterval(interval); // Bileşen kaldırıldığında temizle
   }, []);
 
+  if (!data) return <p>Yükleniyor...</p>;
+
   return (
-    <div className="w-full max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-      {imageUrl ? (
-        <img src={imageUrl} alt="Discord Kullanıcı Kartı" className="w-full h-auto" />
-      ) : (
-        <p>Resim yükleniyor...</p>
-      )}
+    <div className="card">
+      <img src={data.avatar} alt="Profil Resmi" />
+      <h2>{data.username}</h2>
+      <p>{data.status}</p>
     </div>
   );
 };
