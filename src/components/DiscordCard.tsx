@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-/* --- Durum İkonları --- */
+/* --- Durum İkonları (Discord stiline yakın) --- */
 const OnlineIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
     <circle cx="8" cy="8" r="8" fill="#43B581" />
@@ -30,15 +30,19 @@ const OfflineIcon = () => (
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'online': return <OnlineIcon />;
-    case 'idle': return <IdleIcon />;
-    case 'dnd': return <DndIcon />;
-    default: return <OfflineIcon />;
+    case 'online':
+      return <OnlineIcon />;
+    case 'idle':
+      return <IdleIcon />;
+    case 'dnd':
+      return <DndIcon />;
+    default:
+      return <OfflineIcon />;
   }
 };
 
 /* --- Rozet Mapping --- */
-/* Rozetler, tek birleşik (bg-gray-900) ve yuvarlatılmış (rounded-lg) arka plan içinde gösterilecek */
+/* Rozetler tek bir arka plan container’ı içinde, yuvarlatılmış (rounded-lg) köşelerle gösterilecek */
 const badgeMapping = [
   { bit: 1, img: "/badges/brilliance.png" },
   { bit: 2, img: "/badges/aktif_gelistirici.png" },
@@ -62,13 +66,21 @@ type LanyardData = {
     name: string;
     type: number;
     state?: string;
-    timestamps?: { start: number; end?: number; };
-    assets?: { large_image?: string; };
+    timestamps?: {
+      start: number;
+      end?: number;
+    };
+    assets?: {
+      large_image?: string;
+    };
   }>;
   discord_status: string;
   listening_to_spotify: boolean;
   spotify: {
-    timestamps: { start: number; end: number; };
+    timestamps: {
+      start: number;
+      end: number;
+    };
     album: string;
     album_art_url: string;
     artist: string;
@@ -82,7 +94,7 @@ type APIResponse = {
 };
 
 /* --- Süre Formatlama --- */
-/* HH:MM:SS şeklinde, saat sıfırsa MM:SS formatında */
+/* HH:MM:SS şeklinde; saat sıfırsa MM:SS */
 const formatDurationMs = (ms: number): string => {
   const totalSeconds = Math.floor(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -103,13 +115,13 @@ const DiscordCard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<number>(Date.now());
 
-  // Canlı zaman güncellemesi
+  // Canlı zaman güncellemesi (her saniye)
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // 5 saniyede bir API'den veri çekme
+  // Her 5 saniyede bir API'den veri çekme
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -154,7 +166,7 @@ const DiscordCard: React.FC = () => {
   const displayName = discord_user.display_name || discord_user.global_name || discord_user.username;
   const avatarUrl = `https://cdn.discordapp.com/avatars/${discord_user.id}/${discord_user.avatar}.webp?size=1024`;
 
-  // Custom status için (konuşma balonu)
+  // Custom status (konuşma balonu) için: id "custom" olan aktiviteden state alınır.
   const customActivity = activities.find(act => act.id === "custom" && act.state && act.state.trim() !== "");
   const customState = customActivity ? customActivity.state : null;
 
@@ -242,7 +254,7 @@ const DiscordCard: React.FC = () => {
       )}
       <div className="p-6 relative">
         <div className="flex items-center">
-          {/* Avatar & Custom Status Container */}
+          {/* Avatar ve Custom Status Container */}
           <div className="relative w-20 h-20">
             <img
               src={avatarUrl}
@@ -253,23 +265,16 @@ const DiscordCard: React.FC = () => {
             <div className="absolute bottom-0 right-0 bg-gray-900 rounded-full p-1">
               {getStatusIcon(discord_status)}
             </div>
-            {/* Custom Status Balonu & Tail */}
+            {/* Custom Status Konuşma Balonu (entegre tail ile) */}
             {customState && (
-              // Konuşma balonunu avatarın sağ üst kısmından başlatıyoruz.
-              <div className="absolute" style={{ top: '0', left: '105%' }}>
-                <div className="relative">
-                  {/* Tail: Profil resminin sağ üst köşesinden başlayıp balona doğru eğik dizilim */}
-                  <div className="absolute" style={{ top: '6px', left: '-20px' }}>
-                    <div className="flex flex-col items-center">
-                      {/* İlk nokta (küçük) */}
-                      <div className="w-2 h-2 bg-gray-700 rounded-full"></div>
-                      {/* İkinci nokta (biraz büyük) – ilk noktadan aşağıda ve sağda */}
-                      <div className="w-3 h-3 bg-gray-700 rounded-full mt-1"></div>
-                    </div>
-                  </div>
-                  {/* Konuşma balonu */}
-                  <div className="bg-gray-700 text-white text-sm px-3 py-1.5 rounded-lg shadow-lg w-max max-w-xs ml-6">
+              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
+                <div className="relative inline-block">
+                  <div className="bg-gray-700 text-white text-sm px-3 py-1.5 rounded-lg shadow-lg max-w-xs">
                     {customState}
+                    {/* Balon tail (üçgen şeklinde) */}
+                    <div className="absolute bottom-[-6px] left-1/2 transform -translate-x-1/2">
+                      <div className="w-0 h-0 border-t-6 border-t-gray-700 border-x-6 border-x-transparent"></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -278,7 +283,7 @@ const DiscordCard: React.FC = () => {
           <div className="ml-4">
             <h2 className="text-2xl font-bold text-white">{displayName}</h2>
             <p className="text-sm text-gray-300">{discord_user.username}</p>
-            {/* Rozetler: Tek birleşik, yuvarlatılmış arka plan */}
+            {/* Rozetler: Tek birleşik, yuvarlatılmış arka plan (rounded-lg) */}
             <div className="mt-1 bg-gray-900 inline-flex items-center px-2 py-1 rounded-lg">
               {badgeMapping.map(mapping => (
                 <img key={mapping.bit} src={mapping.img} alt="rozet" className="w-4 h-4 mr-1 last:mr-0" />
