@@ -156,13 +156,13 @@ const DiscordCard: React.FC = () => {
   const displayName = discord_user.display_name || discord_user.global_name || discord_user.username;
   const avatarUrl = `https://cdn.discordapp.com/avatars/${discord_user.id}/${discord_user.avatar}.webp?size=1024`;
 
-  // Custom status için: sadece id "custom" olan aktivite kullanılıyor.
+  // Custom status için: yalnızca id "custom" olan aktivite kullanılıyor.
   const customActivity = activities.find(act => act.id === "custom" && act.state && act.state.trim() !== "");
   const customState = customActivity ? customActivity.state : null;
 
-  // Aktivite kartı: Custom status dışındaki aktivitelerden, timestamps olanlar kullanılıyor.
-  const nonCustomActivities = activities.filter(act => act.id !== "custom" && act.timestamps && act.timestamps.start);
+  // Aktivite kartı: Custom status dışındaki aktivitelerden, timestamps olanları kullanıyoruz.
   let activityCard = null;
+  const nonCustomActivities = activities.filter(act => act.id !== "custom" && act.timestamps && act.timestamps.start);
   if (!listening_to_spotify && nonCustomActivities.length > 0) {
     const activity = nonCustomActivities[0];
     const elapsedActivity = currentTime - activity.timestamps!.start;
@@ -253,24 +253,17 @@ const DiscordCard: React.FC = () => {
               alt={discord_user.username}
               className="w-20 h-20 rounded-full border-4 border-gray-800 object-cover"
             />
-            {/* Custom status balonu ve profil ile balon arasında noktalı bağlantı */}
+            {/* Custom status balonu; balon, avatarın soluna daha yakın konumlandırıldı */}
             {customState && (
-              <>
-                {/* Konuşma balonu: Avatar container içinde, sola doğru kaymış, genişletilmiş */}
-                <div className="absolute -top-10 left-10">
-                  <div className="relative bg-gray-700 text-white text-xs px-4 py-2 w-40 shadow-lg">
-                    {customState}
-                  </div>
+              <div className="absolute -top-12 left-0 flex flex-col items-center">
+                <div className="relative bg-gray-700 text-white text-xs px-3 py-1.5 shadow-lg rounded-lg">
+                  {customState}
                 </div>
-                {/* İlk nokta (küçük) */}
-                <div className="absolute -top-2 left-20">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                <div className="mt-1 flex flex-col items-center space-y-1">
+                  <div className="w-2 h-2 bg-gray-700 rounded-full"></div>
+                  <div className="w-3 h-3 bg-gray-700 rounded-full"></div>
                 </div>
-                {/* İkinci nokta (biraz büyük) */}
-                <div className="absolute -top-6 left-24">
-                  <div className="w-3 h-3 bg-white rounded-full"></div>
-                </div>
-              </>
+              </div>
             )}
             {/* Durum ikonu: Avatarın sağ alt köşesinde */}
             <div className="absolute bottom-0 right-0 bg-gray-900 rounded-full p-1">
@@ -280,10 +273,10 @@ const DiscordCard: React.FC = () => {
           <div className="ml-4">
             <h2 className="text-2xl font-bold text-white">{displayName}</h2>
             <p className="text-sm text-gray-300">{discord_user.username}</p>
-            {/* Rozetler: Tüm rozetler tek birleşik arka plan içinde */}
-            <div className="mt-1 bg-gray-900 flex space-x-1 p-1">
+            {/* Rozetler: Tüm rozetler tek birleşik arka plan container’ında, container içeriğe göre otomatik boyutlanıyor */}
+            <div className="mt-1 bg-gray-900 inline-flex items-center px-2 py-1 rounded-lg">
               {badgeMapping.map(mapping => (
-                <img key={mapping.bit} src={mapping.img} alt="rozet" className="w-4 h-4" />
+                <img key={mapping.bit} src={mapping.img} alt="rozet" className="w-4 h-4 mr-1 last:mr-0" />
               ))}
             </div>
           </div>
