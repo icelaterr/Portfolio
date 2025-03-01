@@ -1,7 +1,8 @@
+// src/components/DiscordCard.tsx
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Code, Globe, Mail, MessageCircle } from 'lucide-react';
 
-// Tür tanımlamaları
 type DiscordActivity = {
   name: string;
   type: number;
@@ -82,7 +83,8 @@ const DiscordCard: React.FC = () => {
         const json: APIResponse = await res.json();
         setData(json);
       } catch (err: any) {
-        setError(`Veriler alınamadı: ${err.message}`);
+        // Eğer fetch başarısız olursa; data henüz null olduğu için kullanıcı adı "undefined" olarak gösterilecek.
+        setError(`Veriler alınamadı: ${err.message}. Kullanıcı: ${data?.user.username ?? "undefined"}`);
         console.error(err);
       } finally {
         setLoading(false);
@@ -90,7 +92,6 @@ const DiscordCard: React.FC = () => {
     };
 
     fetchData();
-    // İsteği her dakika yenilemek isterseniz:
     const intervalId = setInterval(fetchData, 60000);
     return () => clearInterval(intervalId);
   }, []);
@@ -176,7 +177,9 @@ const DiscordCard: React.FC = () => {
             />
             <div className="flex-1">
               <h3 className="text-sm font-bold text-white">{spotify.title}</h3>
-              <p className="text-xs text-gray-300">{spotify.artist} &middot; {spotify.albumName}</p>
+              <p className="text-xs text-gray-300">
+                {spotify.artist} &middot; {spotify.albumName}
+              </p>
               <p className="text-xs text-gray-400 mt-1">
                 {formatTimestamp(spotify.timestamps.start)} - {formatTimestamp(spotify.timestamps.end)}
               </p>
@@ -186,7 +189,7 @@ const DiscordCard: React.FC = () => {
             </div>
           </div>
         ) : (
-          // Spotify yoksa ve activities varsa, ilk aktiviteyi gösteriyoruz
+          // Spotify verisi yoksa, aktiviteleri kontrol et ve ilkini göster
           user.activities && user.activities.length > 0 && (
             <div className="mt-4 bg-gray-700/50 rounded-md p-4 flex">
               {user.activities[0].assets.large_image && (
@@ -215,3 +218,4 @@ const DiscordCard: React.FC = () => {
 };
 
 export default DiscordCard;
+    
