@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-/* Discord Durum İkonları - Discord’un orijinal stiline yakın */
+/* Discord Durum İkonları – Orijinal Discord stiline yakın SVG’ler */
 const OnlineIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
     <circle cx="8" cy="8" r="8" fill="#43B581" />
@@ -18,14 +18,14 @@ const IdleIcon = () => (
 const DndIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
     <circle cx="8" cy="8" r="8" fill="#F04747" />
-    {/* İçinde gri eksi */}
+    {/* DND: içindeki eksi gri (#747F8D) */}
     <rect x="4" y="7" width="8" height="2" fill="#747F8D" />
   </svg>
 );
 
 const OfflineIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
-    {/* Açık gri çerçeveli; iç dolgu Discord temasına uygun (#36393F) */}
+    {/* Açık gri çerçeveli, içi Discord temasına uygun (#36393F) */}
     <circle cx="8" cy="8" r="7" fill="#36393F" stroke="#B9BBBE" strokeWidth="2" />
     <line x1="4" y1="4" x2="12" y2="12" stroke="#fff" strokeWidth="2" />
   </svg>
@@ -44,8 +44,8 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-/* Rozetler için mapping - rozet resimleri public/badges/ klasöründen yüklenecek.
-   Dosya isimlerini: brilliance.png, aktif_gelistirici.png, eski_isim.png, gorev_tamamlandi.png */
+/* Rozet mapping – rozet dosyaları public/badges/[isim].png şeklinde yer alıyor.
+   Ayrıca Spotify ikonu da public/badges/spotify.png olarak kullanılacak. */
 const badgeMapping = [
   { bit: 1, img: "/badges/brilliance.png" },
   { bit: 2, img: "/badges/aktif_gelistirici.png" },
@@ -108,13 +108,13 @@ const DiscordCard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<number>(Date.now());
 
-  // Her saniye currentTime güncellensin (canlı ilerleme için)
+  // Her saniye currentTime güncelleniyor (canlı ilerleme için)
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // 5 saniyede bir veri çek, ilk yüklemede spinner göster, sonra sessizce güncelle.
+  // 5 saniyede bir veri yenilemesi; ilk yüklemede spinner, sonrasında sessiz güncelleme.
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -159,20 +159,36 @@ const DiscordCard: React.FC = () => {
   const displayName = discord_user.display_name || discord_user.global_name || discord_user.username;
   const avatarUrl = `https://cdn.discordapp.com/avatars/${discord_user.id}/${discord_user.avatar}.webp?size=1024`;
 
-  // Custom state: Eğer aktiviteler arasında state varsa (konuşma balonu)
-  const customState = activities.find(act => act.state && act.state.trim() !== "")?.state;
+  // Custom status (konuşma balonu) için: yalnızca id "custom" olan aktiviteyi kullanıyoruz.
+  const customActivity = activities.find(act => act.id === "custom" && act.state && act.state.trim() !== "");
+  const customState = customActivity ? customActivity.state : null;
 
-  // Rozetler: public_flags üzerinden badgeMapping uygulanıyor.
-  const badges = [];
-  if (discord_user.public_flags) {
-    badgeMapping.forEach(mapping => {
-      if ((discord_user.public_flags! & mapping.bit) !== 0) {
-        badges.push(mapping.img);
-      }
-    });
+  // Aktivite kartı: Custom status dışındaki aktivitelerden, timestamps olanları kullanıyoruz.
+  const nonCustomActivities = activities.filter(act => act.id !== "custom" && act.timestamps && act.timestamps.start);
+  let activityCard = null;
+  if (!listening_to_spotify && nonCustomActivities.length > 0) {
+    const activity = nonCustomActivities[0];
+    const elapsedActivity = currentTime - activity.timestamps!.start;
+    activityCard = (
+      <div className="mt-4 bg-gray-700/50 rounded-2xl p-4 flex items-center">
+        {activity.assets?.large_image && (
+          <img
+            src={`https://cdn.discordapp.com/${activity.assets.large_image}`}
+            alt={activity.name}
+            className="w-16 h-16 rounded-md object-cover mr-4"
+          />
+        )}
+        <div className="flex-1">
+          <h3 className="text-sm font-bold text-white">{activity.name}</h3>
+          <p className="text-xs text-gray-400 mt-1">
+            {formatDurationMs(elapsedActivity)}
+          </p>
+        </div>
+      </div>
+    );
   }
 
-  // Spotify kartı: Şarkı ilerlemesi hesaplanıyor.
+  // Spotify kartı: Şarkı başlangıç ve bitiş zamanlarına göre ilerleme hesaplanıyor.
   let spotifyCard = null;
   if (listening_to_spotify && spotify) {
     const { start, end } = spotify.timestamps;
@@ -215,28 +231,6 @@ const DiscordCard: React.FC = () => {
     );
   }
 
-  // Aktivite kartı: Eğer Spotify aktif değilse, ilk aktivitenin süresi hesaplanıyor.
-  let activityCard = null;
-  if (!listening_to_spotify && activities.length > 0) {
-    const activity = activities[0];
-    const elapsedActivity = currentTime - (activity.timestamps?.start || currentTime);
-    activityCard = (
-      <div className="mt-4 bg-gray-700/50 rounded-2xl p-4 flex items-center">
-        {activity.assets?.large_image && (
-          <img
-            src={`https://cdn.discordapp.com/${activity.assets.large_image}`}
-            alt={activity.name}
-            className="w-16 h-16 rounded-md object-cover mr-4"
-          />
-        )}
-        <div className="flex-1">
-          <h3 className="text-sm font-bold text-white">{activity.name}</h3>
-          <p className="text-xs text-gray-400 mt-1">Aktif: {formatDurationMs(elapsedActivity)}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -244,7 +238,7 @@ const DiscordCard: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="max-w-md mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden relative"
     >
-      {/* Konuşma balonu: Custom state */}
+      {/* Konuşma balonu: Custom status varsa, avatarın üstünde */}
       {customState && (
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2">
           <div className="relative bg-gray-700 text-white text-xs px-3 py-1 rounded-lg shadow-lg">
@@ -270,7 +264,7 @@ const DiscordCard: React.FC = () => {
               alt={discord_user.username}
               className="w-20 h-20 rounded-full border-4 border-gray-800 object-cover"
             />
-            {/* Durum ikonu: Profil resminin sağ alt köşesinde, avatarın içine gömülü küçük çerçeve */}
+            {/* Durum ikonu: Avatarın sağ alt köşesinde, avatar içine gömülü */}
             <div className="absolute bottom-0 right-0 bg-gray-900 rounded-full p-1">
               {getStatusIcon(discord_status)}
             </div>
@@ -283,12 +277,9 @@ const DiscordCard: React.FC = () => {
               <div className="flex space-x-1 mt-1">
                 {badgeMapping.map(mapping =>
                   (discord_user.public_flags! & mapping.bit) !== 0 ? (
-                    <img
-                      key={mapping.bit}
-                      src={mapping.img}
-                      alt="rozet"
-                      className="w-5 h-5"
-                    />
+                    <div key={mapping.bit} className="w-6 h-6 flex items-center justify-center bg-gray-700 rounded-md">
+                      <img src={mapping.img} alt="rozet" className="w-4 h-4" />
+                    </div>
                   ) : null
                 )}
               </div>
