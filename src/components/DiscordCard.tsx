@@ -45,7 +45,8 @@ const getStatusIcon = (status: string) => {
 };
 
 /* Rozet mapping – rozet dosyaları public/badges/[isim].png şeklinde yer alıyor.
-   Ayrıca Spotify ikonu da public/badges/spotify.png olarak kullanılacak. */
+   Artık API’deki public_flags kontrolü yerine, her zaman tüm rozetler render edilecek.
+   Tasarım için container’da kare köşeler (rounded-none) ve koyu arka plan (bg-gray-900) kullanıldı. */
 const badgeMapping = [
   { bit: 1, img: "/badges/brilliance.png" },
   { bit: 2, img: "/badges/aktif_gelistirici.png" },
@@ -61,6 +62,7 @@ type LanyardData = {
     display_name?: string;
     global_name?: string;
     public_flags?: number;
+    bannerURL?: string;
   };
   activities: Array<{
     id: string;
@@ -205,7 +207,9 @@ const DiscordCard: React.FC = () => {
           />
           <div className="flex-1">
             <h3 className="text-sm font-bold text-white">{spotify.song}</h3>
-            <p className="text-xs text-gray-300">{spotify.artist} &middot; {spotify.album}</p>
+            <p className="text-xs text-gray-300">
+              {spotify.artist} &middot; {spotify.album}
+            </p>
           </div>
           <div className="ml-2">
             <img
@@ -236,7 +240,8 @@ const DiscordCard: React.FC = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-md mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden relative"
+      // overflow-hidden kaldırılarak konuşma balonunun kart dışına taşmasına izin veriliyor.
+      className="max-w-md mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl relative"
     >
       {/* Konuşma balonu: Custom status varsa, avatarın üstünde */}
       {customState && (
@@ -272,18 +277,14 @@ const DiscordCard: React.FC = () => {
           <div className="ml-4">
             <h2 className="text-2xl font-bold text-white">{displayName}</h2>
             <p className="text-sm text-gray-300">{discord_user.username}</p>
-            {/* Rozetler */}
-            {discord_user.public_flags && (
-              <div className="flex space-x-1 mt-1">
-                {badgeMapping.map(mapping =>
-                  (discord_user.public_flags! & mapping.bit) !== 0 ? (
-                    <div key={mapping.bit} className="w-6 h-6 flex items-center justify-center bg-gray-700 rounded-md">
-                      <img src={mapping.img} alt="rozet" className="w-4 h-4" />
-                    </div>
-                  ) : null
-                )}
-              </div>
-            )}
+            {/* Rozetler: Her zaman tüm rozetler render ediliyor */}
+            <div className="flex space-x-1 mt-1">
+              {badgeMapping.map(mapping => (
+                <div key={mapping.bit} className="w-6 h-6 flex items-center justify-center bg-gray-900 rounded-none">
+                  <img src={mapping.img} alt="rozet" className="w-4 h-4" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
         {listening_to_spotify ? spotifyCard : activityCard}
