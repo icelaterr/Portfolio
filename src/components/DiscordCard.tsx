@@ -1,67 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-/* --- Durum İkonları (Discord stiline yakın) --- */
-const OnlineIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16">
-    <circle cx="8" cy="8" r="8" fill="#43B581" />
-  </svg>
-);
-
-const IdleIcon = () => {
-  return (
-    <div style={{ position: "relative", width: 20, height: 20 }}>
-      {/* Dış çember (sarı hilal) */}
-      <div
-        style={{
-          position: "absolute",
-          width: 20,
-          height: 20,
-          borderRadius: "50%",
-          backgroundColor: "#FBC02D",
-        }}
-      />
-      {/* İç çember (hilali oluşturmak için siyah maskeleme) */}
-      <div
-        style={{
-          position: "absolute",
-          width: 20,
-          height: 20,
-          borderRadius: "50%",
-          backgroundColor: "black",
-          left: 5, // Hilalin şeklini ayarlamak için kaydırıyoruz
-        }}
-      />
-    </div>
-  );
-};
-
-const DndIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16">
-    <circle cx="8" cy="8" r="8" fill="#F04747" />
-    {/* Eksi işareti daha koyu gri yapıldı, kalınlaştırıldı ve uçları kütleştirildi */}
-    <rect x="3.5" y="7" width="9" height="2.5" fill="#040f17" rx="1" />
-  </svg>
-);
-
-const OfflineIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16">
-    {/* İçi boş, daha kalın ve daha koyu gri halka */}
-    <circle cx="8" cy="8" r="6.5" fill="none" stroke="#72767d" strokeWidth="3" />
-  </svg>
-);
 
 const getStatusIcon = (status: string) => {
+  let iconSrc = "/statusIcon/offline.png"; // Varsayılan olarak offline
+
   switch (status) {
-    case 'online':
-      return <OnlineIcon />;
-    case 'idle':
-      return <IdleIcon />;
-    case 'dnd':
-      return <DndIcon />;
-    default:
-      return <OfflineIcon />;
+    case "online":
+      iconSrc = "/statusIcon/online.png";
+      break;
+    case "idle":
+      iconSrc = "/statusIcon/idle.png";
+      break;
+    case "dnd":
+      iconSrc = "/statusIcon/dnd.png";
+      break;
   }
+
+  return <img src={iconSrc} alt={status} className="w-5 h-5" />;
 };
 
 /* --- Rozet Mapping --- */
