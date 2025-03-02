@@ -12,7 +12,7 @@ const IdleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
     {/* Hilal sola bakacak şekilde düzeltildi */}
     <circle cx="8" cy="8" r="8" fill="#FAA61A" />
-    <circle cx="12" cy="8" r="6" fill="#2f3136" />
+    <circle cx="6" cy="8" r="12" fill="#2f3136" />
   </svg>
 );
 
@@ -20,7 +20,7 @@ const DndIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
     <circle cx="8" cy="8" r="8" fill="#F04747" />
     {/* Eksi işareti daha koyu gri yapıldı, kalınlaştırıldı ve uçları kütleştirildi */}
-    <rect x="3.5" y="7" width="9" height="2.5" fill="#4f5258" rx="1" />
+    <rect x="3.5" y="7" width="9" height="2.5" fill="#040f17" rx="1" />
   </svg>
 );
 
