@@ -8,16 +8,33 @@ const OnlineIcon = () => (
   </svg>
 );
 
-const IdleIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16">
-    {/* Dış daire */}
-    <circle cx="8" cy="8" r="8" fill="#FAA61A" />
-    
-    {/* İç hilali sola üst tarafa döndürme */}
-    <circle cx="5" cy="5" r="6" fill="black" />
-  </svg>
-);
-
+const IdleIcon = () => {
+  return (
+    <div style={{ position: "relative", width: 20, height: 20 }}>
+      {/* Dış çember (sarı hilal) */}
+      <div
+        style={{
+          position: "absolute",
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          backgroundColor: "#FBC02D",
+        }}
+      />
+      {/* İç çember (hilali oluşturmak için siyah maskeleme) */}
+      <div
+        style={{
+          position: "absolute",
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          backgroundColor: "black",
+          left: 5, // Hilalin şeklini ayarlamak için kaydırıyoruz
+        }}
+      />
+    </div>
+  );
+};
 
 const DndIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
