@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-/* --- Durum İkonları (Discord stiline yakın) --- */
+/* --- Güncellenmiş Durum İkonları --- */
 const OnlineIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
     <circle cx="8" cy="8" r="8" fill="#43B581" />
@@ -10,39 +10,33 @@ const OnlineIcon = () => (
 
 const IdleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
-    <path d="M8 0a8 8 0 1 0 8 8 6 6 0 1 1-8-8z" fill="#FAA61A" />
+    <path d="M8 16A8 8 0 1 0 8 0a6 6 0 0 1 0 12z" fill="#FAA61A" />
   </svg>
 );
 
 const DndIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
     <circle cx="8" cy="8" r="8" fill="#F04747" />
-    <rect x="4" y="7" width="8" height="2" fill="#747F8D" />
+    <rect x="4" y="7" width="8" height="2" fill="#4F545C" />
   </svg>
 );
 
 const OfflineIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
-    <circle cx="8" cy="8" r="7" fill="#36393F" stroke="#B9BBBE" strokeWidth="2" />
-    <line x1="4" y1="4" x2="12" y2="12" stroke="#fff" strokeWidth="2" />
+    <circle cx="8" cy="8" r="6.25" fill="none" stroke="#5C646E" strokeWidth="2.5" />
   </svg>
 );
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'online':
-      return <OnlineIcon />;
-    case 'idle':
-      return <IdleIcon />;
-    case 'dnd':
-      return <DndIcon />;
-    default:
-      return <OfflineIcon />;
+    case 'online': return <OnlineIcon />;
+    case 'idle': return <IdleIcon />;
+    case 'dnd': return <DndIcon />;
+    default: return <OfflineIcon />;
   }
 };
 
 /* --- Rozet Mapping --- */
-/* Rozetler tek bir arka plan container’ı içinde, yuvarlatılmış (rounded-lg) köşelerle gösterilecek */
 const badgeMapping = [
   { bit: 1, img: "/badges/brilliance.png" },
   { bit: 2, img: "/badges/aktif_gelistirici.png" },
@@ -50,7 +44,7 @@ const badgeMapping = [
   { bit: 8, img: "/badges/gorev_tamamlandi.png" }
 ];
 
-/* --- Tip Tanımları --- */
+/* --- Tip Tanımları ve Yardımcı Fonksiyonlar --- */
 type LanyardData = {
   discord_user: {
     id: string;
@@ -66,21 +60,13 @@ type LanyardData = {
     name: string;
     type: number;
     state?: string;
-    timestamps?: {
-      start: number;
-      end?: number;
-    };
-    assets?: {
-      large_image?: string;
-    };
+    timestamps?: { start: number; end?: number };
+    assets?: { large_image?: string };
   }>;
   discord_status: string;
   listening_to_spotify: boolean;
   spotify: {
-    timestamps: {
-      start: number;
-      end: number;
-    };
+    timestamps: { start: number; end: number };
     album: string;
     album_art_url: string;
     artist: string;
@@ -88,40 +74,30 @@ type LanyardData = {
   } | null;
 };
 
-type APIResponse = {
-  data: LanyardData;
-  success: boolean;
-};
+type APIResponse = { data: LanyardData; success: boolean };
 
-/* --- Süre Formatlama --- */
-/* HH:MM:SS şeklinde; saat sıfırsa MM:SS */
 const formatDurationMs = (ms: number): string => {
   const totalSeconds = Math.floor(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds
-      .toString()
-      .padStart(2, '0')}`;
-  }
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  return hours > 0 
+    ? `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    : `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
-/* --- DiscordCard Component --- */
+/* --- Ana Component --- */
 const DiscordCard: React.FC = () => {
   const [data, setData] = useState<LanyardData | null>(null);
-  const [initialLoading, setInitialLoading] = useState<boolean>(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentTime, setCurrentTime] = useState<number>(Date.now());
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
-  // Canlı zaman güncellemesi (her saniye)
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Her 5 saniyede bir API'den veri çekme
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -133,8 +109,7 @@ const DiscordCard: React.FC = () => {
         setError(null);
         if (initialLoading) setInitialLoading(false);
       } catch (err: any) {
-        const username = data?.discord_user?.username || 'undefined';
-        setError(`Veriler alınamadı: ${err.message}. Kullanıcı: ${username}`);
+        setError(`Veriler alınamadı: ${err.message}`);
         console.error(err);
       }
     };
@@ -144,99 +119,73 @@ const DiscordCard: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [initialLoading]);
 
-  if (initialLoading) {
-    return (
-      <div className="max-w-md mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 animate-pulse text-white text-center">
-        Yükleniyor...
-      </div>
-    );
-  }
+  if (initialLoading) return (
+    <div className="max-w-md mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 animate-pulse text-white text-center">
+      Yükleniyor...
+    </div>
+  );
 
-  if (error || !data) {
-    const username = data?.discord_user?.username || 'undefined';
-    return (
-      <div className="max-w-md mx-auto bg-red-900/20 text-red-200 rounded-2xl shadow-2xl p-6 text-center">
-        <p>{error || 'Profil yüklenemedi.'}</p>
-        <p>Kullanıcı: {username}</p>
-      </div>
-    );
-  }
+  if (error || !data) return (
+    <div className="max-w-md mx-auto bg-red-900/20 text-red-200 rounded-2xl shadow-2xl p-6 text-center">
+      <p>{error || 'Profil yüklenemedi.'}</p>
+    </div>
+  );
 
   const { discord_user, activities, discord_status, listening_to_spotify, spotify } = data;
   const displayName = discord_user.display_name || discord_user.global_name || discord_user.username;
   const avatarUrl = `https://cdn.discordapp.com/avatars/${discord_user.id}/${discord_user.avatar}.webp?size=1024`;
+  const customActivity = activities.find(act => act.id === "custom" && act.state?.trim());
 
-  // Custom status (konuşma balonu) için: id "custom" olan aktiviteden state alınır.
-  const customActivity = activities.find(act => act.id === "custom" && act.state && act.state.trim() !== "");
-  const customState = customActivity ? customActivity.state : null;
+  /* --- Aktivite Kartları --- */
+  const renderActivity = () => {
+    if (listening_to_spotify && spotify) {
+      const { start, end } = spotify.timestamps;
+      const totalDuration = end - start;
+      const elapsed = Math.min(Math.max(currentTime - start, 0), totalDuration);
+      const progressPercent = (elapsed / totalDuration) * 100;
 
-  // Aktivite kartı (custom status dışındaki aktiviteler)
-  let activityCard = null;
-  const nonCustomActivities = activities.filter(
-    act => act.id !== "custom" && act.timestamps && act.timestamps.start
-  );
-  if (!listening_to_spotify && nonCustomActivities.length > 0) {
-    const activity = nonCustomActivities[0];
-    const elapsedActivity = currentTime - activity.timestamps!.start;
-    activityCard = (
+      return (
+        <div className="mt-4 bg-gray-700/50 rounded-2xl p-4">
+          <div className="flex items-center">
+            <img src={spotify.album_art_url} alt={spotify.album} className="w-16 h-16 rounded-md object-cover mr-4" />
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-white">{spotify.song}</h3>
+              <p className="text-xs text-gray-300">{spotify.artist} &middot; {spotify.album}</p>
+            </div>
+            <img src="/badges/spotify.png" alt="Spotify" className="w-6 h-6 ml-2" />
+          </div>
+          <div className="mt-3">
+            <div className="w-full h-2 bg-gray-600 rounded-full">
+              <div className="h-2 bg-green-500 rounded-full transition-all duration-1000 ease-linear" 
+                   style={{ width: `${progressPercent}%` }} />
+            </div>
+            <div className="flex justify-between text-xs text-green-500 font-medium mt-1">
+              <span>{formatDurationMs(elapsed)}</span>
+              <span>{formatDurationMs(totalDuration)}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const activity = activities.find(act => act.id !== "custom" && act.timestamps?.start);
+    if (!activity) return null;
+
+    const elapsed = currentTime - activity.timestamps!.start;
+    return (
       <div className="mt-4 bg-gray-700/50 rounded-2xl p-4 flex items-center">
         {activity.assets?.large_image && (
-          <img
-            src={`https://cdn.discordapp.com/${activity.assets.large_image}`}
-            alt={activity.name}
-            className="w-16 h-16 rounded-md object-cover mr-4"
-          />
+          <img src={`https://cdn.discordapp.com/${activity.assets.large_image}`} 
+               alt={activity.name} 
+               className="w-16 h-16 rounded-md object-cover mr-4" />
         )}
         <div className="flex-1">
           <h3 className="text-sm font-bold text-white">{activity.name}</h3>
-          <p className="text-xs text-green-500 font-medium mt-1">
-            {formatDurationMs(elapsedActivity)}
-          </p>
+          <p className="text-xs text-green-500 font-medium mt-1">{formatDurationMs(elapsed)}</p>
         </div>
       </div>
     );
-  }
-
-  // Spotify kartı
-  let spotifyCard = null;
-  if (listening_to_spotify && spotify) {
-    const { start, end } = spotify.timestamps;
-    const totalDuration = end - start;
-    const elapsed = Math.min(Math.max(currentTime - start, 0), totalDuration);
-    const progressPercent = (elapsed / totalDuration) * 100;
-    spotifyCard = (
-      <div className="mt-4 bg-gray-700/50 rounded-2xl p-4">
-        <div className="flex items-center">
-          <img
-            src={spotify.album_art_url}
-            alt={spotify.album}
-            className="w-16 h-16 rounded-md object-cover mr-4"
-          />
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-white">{spotify.song}</h3>
-            <p className="text-xs text-gray-300">
-              {spotify.artist} &middot; {spotify.album}
-            </p>
-          </div>
-          <div className="ml-2">
-            <img src="/badges/spotify.png" alt="Spotify" className="w-6 h-6" />
-          </div>
-        </div>
-        <div className="mt-3">
-          <div className="w-full h-2 bg-gray-600 rounded-full">
-            <div
-              className="h-2 bg-green-500 rounded-full transition-all duration-1000 ease-linear"
-              style={{ width: `${progressPercent}%` }}
-            ></div>
-          </div>
-          <div className="flex justify-between text-xs text-green-500 font-medium mt-1">
-            <span>{formatDurationMs(elapsed)}</span>
-            <span>{formatDurationMs(totalDuration)}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  };
 
   return (
     <motion.div
@@ -245,45 +194,38 @@ const DiscordCard: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="max-w-md mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl relative"
     >
-      {/* Banner (varsa) */}
-      {discord_user.bannerURL && discord_user.bannerURL !== "" && (
-        <div
-          className="h-24 w-full bg-cover bg-center"
-          style={{ backgroundImage: `url(${discord_user.bannerURL})` }}
-        />
+      {discord_user.bannerURL && (
+        <div className="h-24 w-full bg-cover bg-center" 
+             style={{ backgroundImage: `url(${discord_user.bannerURL})` }} />
       )}
+
       <div className="p-6 relative">
         <div className="flex items-center">
-          {/* Avatar ve Custom Status Container */}
           <div className="relative w-20 h-20">
-            <img
-              src={avatarUrl}
-              alt={discord_user.username}
-              className="w-full h-full rounded-full border-4 border-gray-800 object-cover"
-            />
-            {/* Durum İkonu */}
+            <img src={avatarUrl} alt={discord_user.username} 
+                 className="w-full h-full rounded-full border-4 border-gray-800 object-cover" />
+            
             <div className="absolute bottom-0 right-0 bg-gray-900 rounded-full p-1">
               {getStatusIcon(discord_status)}
             </div>
-            {/* Custom Status Konuşma Balonu (entegre tail ile) */}
-            {customState && (
-              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
-                <div className="relative inline-block">
-                  <div className="bg-gray-700 text-white text-sm px-3 py-1.5 rounded-lg shadow-lg max-w-xs">
-                    {customState}
-                    {/* Balon tail (üçgen şeklinde) */}
-                    <div className="absolute bottom-[-6px] left-1/2 transform -translate-x-1/2">
-                      <div className="w-0 h-0 border-t-6 border-t-gray-700 border-x-6 border-x-transparent"></div>
+
+            {customActivity?.state && (
+              <div className="absolute -top-20 -right-8">
+                <div className="relative">
+                  <div className="bg-gray-700 text-white text-sm px-3 py-1.5 rounded-lg shadow-lg max-w-[160px] break-words">
+                    {customActivity.state}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2">
+                      <div className="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-gray-700" />
                     </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
+
           <div className="ml-4">
             <h2 className="text-2xl font-bold text-white">{displayName}</h2>
-            <p className="text-sm text-gray-300">{discord_user.username}</p>
-            {/* Rozetler: Tek birleşik, yuvarlatılmış arka plan (rounded-lg) */}
+            <p className="text-sm text-gray-300">@{discord_user.username}</p>
             <div className="mt-1 bg-gray-900 inline-flex items-center px-2 py-1 rounded-lg">
               {badgeMapping.map(mapping => (
                 <img key={mapping.bit} src={mapping.img} alt="rozet" className="w-4 h-4 mr-1 last:mr-0" />
@@ -291,7 +233,8 @@ const DiscordCard: React.FC = () => {
             </div>
           </div>
         </div>
-        {listening_to_spotify ? spotifyCard : activityCard}
+
+        {renderActivity()}
       </div>
     </motion.div>
   );
