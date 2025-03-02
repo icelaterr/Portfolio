@@ -11,8 +11,8 @@ const OnlineIcon = () => (
 const IdleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16">
     {/* Hilal sola bakacak şekilde düzeltildi */}
-    <circle cx="6" cy="8" r="12" fill="#FAA61A" />
-    <circle cx="8" cy="8" r="8" fill="#2f3136" />
+    <circle cx="5" cy="5" r="5" fill="#FAA61A" />
+    <circle cx="6" cy="8" r="12" fill="#2f3136" />
   </svg>
 );
 
